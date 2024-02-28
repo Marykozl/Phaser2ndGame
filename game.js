@@ -32,7 +32,7 @@ function preload ()
     this.load.image('sky', 'assets/fon.png');
     this.load.image('ground', 'assets/ground.png');
     this.load.image('star', 'assets/brown.png');
-    this.load.spritesheet('dude', 'assets/red.png', { frameWidth: 142.2, frameHeight: 213 });
+    this.load.spritesheet('dude', 'assets/red.png', { frameWidth: 32, frameHeight: 48});
 }
 
 function create ()
@@ -48,14 +48,15 @@ function create ()
     platforms.create(400, 568, 'ground').setScale(2).refreshBody();
 
     //  Now let's create some ledges
-    platforms.create(600, 400, 'ground');
+    platforms.create(0, 450, 'ground').setScale(3);
     platforms.create(50, 250, 'ground');
     platforms.create(750, 220, 'ground');
 
     // The player and its settings
-    player = this.physics.add.sprite(100, 450, 'dude');
+    player = this.physics.add.sprite(100, 300, 'dude');
 
     //  Player physics properties. Give the little guy a slight bounce.
+    player.setScale(2)
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
 
