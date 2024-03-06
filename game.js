@@ -1,7 +1,7 @@
 var config = {
     type: Phaser.AUTO,
-    width: 626,
-    height: 417,
+    width: 1920,
+    height: 1080,
     physics: {
         default: 'arcade',
         arcade: {
@@ -38,28 +38,24 @@ function preload ()
 function create ()
 {
     //  A simple background for our game
-    this.add.image(313, 208.5, 'sky');
+    this.add.tileSprite(0, 0, 9600,1080, 'sky').setOrigin(0,0);
 
     //  The platforms group contains the ground and the 2 ledges we can jump on
     platforms = this.physics.add.staticGroup();
 
     //  Here we create the ground.
     //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-    platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-
-    //  Now let's create some ledges
-    platforms.create(0, 450, 'ground').setScale(3);
-    platforms.create(50, 250, 'ground');
-    platforms.create(750, 220, 'ground');
+ for (var x=0;x < worldWidth; x = x + 400){
+    console.log(x)
+    platforms.create(x,1040,'ground').setOrigin(0,0).refreshBody().setScale(1);
+ }
 
     // The player and its settings
-    player = this.physics.add.sprite(100, 300, 'dude');
+    player = this.physics.add.sprite(800, 800, 'dude');
 
-    //  Player physics properties. Give the little guy a slight bounce.
-    player.setScale(2)
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
-
+    player.setDepth(5);
     //  Our player animations, turning, walking left and walking right.
     this.anims.create({
         key: 'left',
