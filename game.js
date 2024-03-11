@@ -16,14 +16,20 @@ var config = {
     }
 };
 
+
+var score = 0;
+var scoreText;
+var timer = 0;
+var timerText; 
+var timerOn = false;
+var gameOver = false;
 var player;
 var stars;
 var bombs;
 var platforms;
 var cursors;
-var score = 0;
-var gameOver = false;
-var scoreText;
+
+var worldWidth=9600;
 
 var game = new Phaser.Game(config);
 
@@ -32,6 +38,10 @@ function preload ()
     this.load.image('sky', 'assets/fon.png');
     this.load.image('ground', 'assets/ground.png');
     this.load.image('star', 'assets/brown.png');
+    this.load.image('kysh', 'assets/kysh.png');
+    this.load.image('2', 'assets/2.png'); 
+    this.load.image('3', 'assets/3.png'); 
+    this.load.image('4', 'assets/4.png');
     this.load.spritesheet('dude', 'assets/red.png', { frameWidth: 32, frameHeight: 48});
 }
 
@@ -45,17 +55,26 @@ function create ()
 
     //  Here we create the ground.
     //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
- for (var x=0;x < worldWidth; x = x + 400){
+for (var x=0;x < worldWidth; x = x + 128)
+{
     console.log(x)
     platforms.create(x,1040,'ground').setOrigin(0,0).refreshBody().setScale(1);
  }
 
+
+   
     // The player and its settings
     player = this.physics.add.sprite(800, 800, 'dude');
 
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
     player.setDepth(5);
+
+
+    this.cameras.main.setBounds(0, 0, worldWidth, 1080);
+    this.physics.world.setBounds(0, 0, worldWidth, 1080);
+
+    this.cameras.main.startFollow(player);
     //  Our player animations, turning, walking left and walking right.
     this.anims.create({
         key: 'left',
@@ -77,15 +96,28 @@ function create ()
         repeat: -1
     });
 
+//Додаємо об'єкти випадковим чином на всю ширину екрану
+    kysh = this.physics.add.staticGroup();
+
+    for (var x= 0; x < worldWidth; x = x + Phaser.Math.FloatBetween(200, 500)) {
+         kysh
+         .create(x, 1080 - 30, 'kysh')
+         .setOrigin(0,1)
+         .setScale(Phaser.Math.FloatBetween(0.5, 2))
+         .setDepth(Phaser.Math.Between(1, 10));
+    }
+
+   
     //  Input Events
     cursors = this.input.keyboard.createCursorKeys();
 
     //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
     stars = this.physics.add.group({
         key: 'star',
-        repeat: 11,
+        repeat: 70,
         setXY: { x: 12, y: 0, stepX: 70 }
     });
+
 
     stars.children.iterate(function (child) {
 
@@ -104,6 +136,14 @@ function create ()
     this.physics.add.collider(stars, platforms);
     this.physics.add.collider(bombs, platforms);
 
+    scoreText = this.add.text(16, 16, 'Очок: 0', { fontSize: '32px', fill: '#000' }); 
+    timerText = this.add.text(16, 50, 'Час: 00:00.0', { fontSize: '32px', fill: '#000' }); 
+
+    const timerFunction = setInterval(function() {
+        if (!timerOn) {return;} // якщо таймер вимкнено, нічого не робити
+        timer+=1;
+        timerText.setText("Час: " + formatTimerText(timer));
+      }, 95);
     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
     this.physics.add.overlap(player, stars, collectStar, null, this);
 
@@ -149,7 +189,7 @@ function collectStar (player, star)
     //  Add and update the score
     score += 10;
     scoreText.setText('Score: ' + score);
-
+    timerOn = true;
     if (stars.countActive(true) === 0)
     {
         //  A new batch of stars to collect
