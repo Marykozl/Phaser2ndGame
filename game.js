@@ -19,9 +19,6 @@ var config = {
 
 var score = 0;
 var scoreText;
-var timer = 0;
-var timerText; 
-var timerOn = false;
 var gameOver = false;
 var player;
 var stars;
@@ -30,60 +27,49 @@ var platforms;
 var cursors;
 var life = 5;
 
-var worldWidth=9600;
+var worldWidth = 9600;
 
 var game = new Phaser.Game(config);
 
-//Формування смуги життя
-function showLife() {
-    var lifeLine = ' Життя: '
 
-    for (var i = 0; i < life; i++)
-     {
-        lifeLine += '💚'
-    }
-    return lifeLine
-}
 
-function preload ()
-{
+function preload() {
     this.load.image('sky', 'assets/fon.png');
+    this.load.image('bomb', 'assets/bomb.png');
     this.load.image('ground', 'assets/ground.png');
     this.load.image('star', 'assets/brown.png');
     this.load.image('kysh', 'assets/kysh.png');
-    this.load.image('platformStart', 'assets/platformStart.png'); 
-    this.load.image('platformOne', 'assets/platformOne.png'); 
+    this.load.image('platformStart', 'assets/platformStart.png');
+    this.load.image('platformOne', 'assets/platformOne.png');
     this.load.image('platformFinish', 'assets/platformFinish.png');
-    this.load.spritesheet('dude', 'assets/red.png', { frameWidth: 32, frameHeight: 48});
+    this.load.spritesheet('dude', 'assets/red.png', { frameWidth: 32, frameHeight: 48 });
 }
 
-function create ()
-{
+function create() {
     //  A simple background for our game reset
-    this.add.tileSprite(0, 0, 9600,1080, 'sky').setOrigin(0,0);
+    this.add.tileSprite(0, 0, 9600, 1080, 'sky').setOrigin(0, 0);
 
     //  The platforms group contains the ground and the 2 ledges we can jump on
     platforms = this.physics.add.staticGroup();
 
     //  Here we create the ground.
     //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-for (var x=0;x < worldWidth; x = x + 128)
-{
-    
- //   console.log(x)
-    platforms.create(x,1040,'ground').setOrigin(0,0).refreshBody().setScale(1);
- }
+    for (var x = 0; x < worldWidth; x = x + 128) {
 
- for (var x = 0; x < worldWidth; x = x + Phaser.Math.Between(600, 400)) { 
-    var y = Phaser.Math.FloatBetween(700, 93 * 10) 
-    platforms.create(x, y, 'platformStart'); 
-    var i; 
-    for (i = 1; i < Phaser.Math.Between(0, 5); i++) { 
-        platforms.create(x + 100 * i, y, 'platformOne'); 
-    } 
-    platforms.create(x + 100 * i, y, 'platformFinish'); 
-}
-   
+        //   console.log(x)
+        platforms.create(x, 1040, 'ground').setOrigin(0, 0).refreshBody().setScale(1);
+    }
+
+    for (var x = 0; x < worldWidth; x = x + Phaser.Math.Between(600, 400)) {
+        var y = Phaser.Math.FloatBetween(700, 93 * 10)
+        platforms.create(x, y, 'platformStart');
+        var i;
+        for (i = 1; i < Phaser.Math.Between(0, 5); i++) {
+            platforms.create(x + 100 * i, y, 'platformOne');
+        }
+        platforms.create(x + 100 * i, y, 'platformFinish');
+    }
+
     // The player and its settings
     player = this.physics.add.sprite(800, 800, 'dude');
 
@@ -106,7 +92,7 @@ for (var x=0;x < worldWidth; x = x + 128)
 
     this.anims.create({
         key: 'turn',
-        frames: [ { key: 'dude', frame: 4 } ],
+        frames: [{ key: 'dude', frame: 4 }],
         frameRate: 20
     });
 
@@ -117,25 +103,25 @@ for (var x=0;x < worldWidth; x = x + 128)
         repeat: -1
     });
 
-//Додаємо об'єкти випадковим чином на всю ширину екрану
+    //Додаємо об'єкти випадковим чином на всю ширину екрану
     kysh = this.physics.add.staticGroup();
 
-    for (var x= 0; x < worldWidth; x = x + Phaser.Math.FloatBetween(200, 500)) {
-         kysh
-         .create(x, 1080 - 30, 'kysh')
-         .setOrigin(0,1)
-         .setScale(Phaser.Math.FloatBetween(0.5, 2))
-         .setDepth(Phaser.Math.Between(1, 10));
+    for (var x = 0; x < worldWidth; x = x + Phaser.Math.FloatBetween(200, 500)) {
+        kysh
+            .create(x, 1080 - 30, 'kysh')
+            .setOrigin(0, 1)
+            .setScale(Phaser.Math.FloatBetween(0.5, 2))
+            .setDepth(Phaser.Math.Between(1, 10));
     }
 
-   
+
     //  Input Events
     cursors = this.input.keyboard.createCursorKeys();
 
     //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
     stars = this.physics.add.group({
         key: 'star',
-        repeat: 70,
+        repeat: 1000    ,
         setXY: { x: 12, y: 0, stepX: 70 }
     });
 
@@ -147,82 +133,76 @@ for (var x=0;x < worldWidth; x = x + 128)
 
     });
 
+    //Додаємо бомби
     bombs = this.physics.add.group();
 
-    this.physics.add.collider(bombs, platforms);
 
-    this.physics.add.collider(player, bombs, hitBomb, null, this);
+    bombs.create(50, 16, 'bomb')
+        .setBounce(.1)
+        .setCollideWorldBounds(true)
+        .setVelocity(Phaser.Math.Between(-200, 200), 100)
+        .allowGravity = false;
 
+
+
+
+    
     //  The score
 
     scoreText = this.add.text(16, 16, 'Очок: 0', { fontSize: '32px', fill: '#000' })
-         .setOrigin(0, 0)
+        .setOrigin(0, 0)
         .setScrollFactor(0)
-    
-
     //Life
-    lifeText = this.add.text(1500, 100, showLife(), { fontSize: '40px', fill:'#FFF'})
+    lifeText = this.add.text(1500, 16, showLife(), { fontSize: '32px', fill: '#000' })
+        .setOrigin(0, 0)
+        .setScrollFactor(0)
 
-    
-    
+
 
     //  Collide the player and the stars with the platforms
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(stars, platforms);
     this.physics.add.collider(bombs, platforms);
 
-    
-   
-
-    
     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
     this.physics.add.overlap(player, stars, collectStar, null, this);
-
     this.physics.add.collider(player, bombs, hitBomb, null, this);
 }
 
-function update ()
-{
-    if (gameOver)
-    {
+function update() {
+    if (gameOver) {
         return;
     }
 
-    if (cursors.left.isDown)
-    {
+    if (cursors.left.isDown) {
         player.setVelocityX(-160);
 
         player.anims.play('left', true);
     }
-    else if (cursors.right.isDown)
-    {
+    else if (cursors.right.isDown) {
         player.setVelocityX(160);
 
         player.anims.play('right', true);
     }
-    else
-    {
+    else {
         player.setVelocityX(0);
 
         player.anims.play('turn');
     }
 
-    if (cursors.up.isDown && player.body.touching.down)
-    {
+    if (cursors.up.isDown && player.body.touching.down) {
         player.setVelocityY(-330);
     }
 }
 
-function collectStar (player, star)
-{
+function collectStar(player, star) {
     star.disableBody(true, true);
 
     //  Add and update the score
     score += 10;
     scoreText.setText('Score: ' + score);
     timerOn = true;
-    if (stars.countActive(true) === 0)
-    {
+    if (stars.countActive(true) === 0) {
         //  A new batch of stars to collect
         stars.children.iterate(function (child) {
 
@@ -232,22 +212,28 @@ function collectStar (player, star)
 
         var x = (player.x < 400) ? Phaser.Math.Between(400, 800) : Phaser.Math.Between(0, 400);
 
-        var bomb = bombs.create(x, 16, 'bomb');
-        bomb.setBounce(1);
-        bomb.setCollideWorldBounds(true);
-        bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-        bomb.allowGravity = false;
 
     }
 }
 
-function hitBomb (player, bomb)
-{
-    this.physics.pause();
+function hitBomb(player, bomb) {
+    bomb.disableBody(true, true);
+   // this.physics.pause();
+   life -= 1;
+    lifeText.setText(showLife());
 
     player.setTint(0xff0000);
 
     player.anims.play('turn');
 
-    gameOver = true;
+    //gameOver = true;
+}
+
+//Формування смуги життя
+function showLife() {
+    var lifeLine = ' Життя: '
+    for (var i = 0; i < life; i++) {
+        lifeLine += '💚'
+    }
+    return lifeLine
 }
