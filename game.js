@@ -28,10 +28,22 @@ var stars;
 var bombs;
 var platforms;
 var cursors;
+var life = 5;
 
 var worldWidth=9600;
 
 var game = new Phaser.Game(config);
+
+//Формування смуги життя
+function showLife() {
+    var lifeLine = ' Життя: '
+
+    for (var i = 0; i < life; i++)
+     {
+        lifeLine += '💚'
+    }
+    return lifeLine
+}
 
 function preload ()
 {
@@ -39,15 +51,15 @@ function preload ()
     this.load.image('ground', 'assets/ground.png');
     this.load.image('star', 'assets/brown.png');
     this.load.image('kysh', 'assets/kysh.png');
-    this.load.image('2', 'assets/2.png'); 
-    this.load.image('3', 'assets/3.png'); 
-    this.load.image('4', 'assets/4.png');
+    this.load.image('platformStart', 'assets/platformStart.png'); 
+    this.load.image('platformOne', 'assets/platformOne.png'); 
+    this.load.image('platformFinish', 'assets/platformFinish.png');
     this.load.spritesheet('dude', 'assets/red.png', { frameWidth: 32, frameHeight: 48});
 }
 
 function create ()
 {
-    //  A simple background for our game
+    //  A simple background for our game reset
     this.add.tileSprite(0, 0, 9600,1080, 'sky').setOrigin(0,0);
 
     //  The platforms group contains the ground and the 2 ledges we can jump on
@@ -57,11 +69,20 @@ function create ()
     //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
 for (var x=0;x < worldWidth; x = x + 128)
 {
-    console.log(x)
+    
+ //   console.log(x)
     platforms.create(x,1040,'ground').setOrigin(0,0).refreshBody().setScale(1);
  }
 
-
+ for (var x = 0; x < worldWidth; x = x + Phaser.Math.Between(600, 400)) { 
+    var y = Phaser.Math.FloatBetween(700, 93 * 10) 
+    platforms.create(x, y, 'platformStart'); 
+    var i; 
+    for (i = 1; i < Phaser.Math.Between(0, 5); i++) { 
+        platforms.create(x + 100 * i, y, 'platformOne'); 
+    } 
+    platforms.create(x + 100 * i, y, 'platformFinish'); 
+}
    
     // The player and its settings
     player = this.physics.add.sprite(800, 800, 'dude');
@@ -128,22 +149,32 @@ for (var x=0;x < worldWidth; x = x + 128)
 
     bombs = this.physics.add.group();
 
+    this.physics.add.collider(bombs, platforms);
+
+    this.physics.add.collider(player, bombs, hitBomb, null, this);
+
     //  The score
-    scoreText = this.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+
+    scoreText = this.add.text(16, 16, 'Очок: 0', { fontSize: '32px', fill: '#000' })
+         .setOrigin(0, 0)
+        .setScrollFactor(0)
+    
+
+    //Life
+    lifeText = this.add.text(1500, 100, showLife(), { fontSize: '40px', fill:'#FFF'})
+
+    
+    
 
     //  Collide the player and the stars with the platforms
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(stars, platforms);
     this.physics.add.collider(bombs, platforms);
 
-    scoreText = this.add.text(16, 16, 'Очок: 0', { fontSize: '32px', fill: '#000' }); 
-    timerText = this.add.text(16, 50, 'Час: 00:00.0', { fontSize: '32px', fill: '#000' }); 
+    
+   
 
-    const timerFunction = setInterval(function() {
-        if (!timerOn) {return;} // якщо таймер вимкнено, нічого не робити
-        timer+=1;
-        timerText.setText("Час: " + formatTimerText(timer));
-      }, 95);
+    
     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
     this.physics.add.overlap(player, stars, collectStar, null, this);
 
