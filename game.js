@@ -21,7 +21,7 @@ var score = 0;
 var scoreText;
 var gameOver = false;
 var player;
-var vorog;
+//var vorog;
 var stars;
 var bombs;
 var platforms;
@@ -80,20 +80,20 @@ function create() {
     player.setDepth(5);
 
     //Створення ворога
-    vorog = this.physics.add.group();
+   // vorog = this.physics.add.group();
 
 
-    vorog.create(50, 16, 'vorog')
-        .setBounce(18)
-        .setCollideWorldBounds(true)
-        .setVelocity(Phaser.Math.Between(-200, 200), 100)
-        .allowGravity = false;
+   //vorog.create(50, 16, 'vorog')
+     //   .setBounce(18)
+      // .setCollideWorldBounds(true)
+      //  .setVelocity(Phaser.Math.Between(-200, 200), 100)
+       // .allowGravity = false;
 
-        vorog = this.physics.add.group({
-            key: 'vorog',
-            repeat: 20    ,
-            setXY: { x: 12, y: 0, stepX: 50 }
-        });
+      //  vorog = this.physics.add.group({
+         //   key: 'vorog',
+       //     repeat: 20    ,
+         //  setXY: { x: 12, y: 0, stepX: 50 }
+        //});
 
     this.cameras.main.setBounds(0, 0, worldWidth, 1080);
     this.physics.world.setBounds(0, 0, worldWidth, 1080);
@@ -162,7 +162,7 @@ function create() {
 
         bombs = this.physics.add.group({
             key: 'bomb',
-            repeat: 20    ,
+            repeat: 1000    ,
             setXY: { x: 250, y: 350, stepX: 100 }
         });
 
@@ -182,14 +182,14 @@ function create() {
 
     //  Collide the player and the stars with the platforms
     this.physics.add.collider(player, platforms);
-    this.physics.add.collider(vorog, platforms);
+  //  this.physics.add.collider(vorog, platforms);
     this.physics.add.collider(stars, platforms);
     this.physics.add.collider(bombs, platforms);
 
     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
     this.physics.add.overlap(player, stars, collectStar, null, this);
     this.physics.add.collider(player, bombs, hitBomb, null, this);
-    this.physics.add.collider(player, vorog, hitBomb, null, this);
+   // this.physics.add.collider(player, vorog, hitBomb, null, this);
 }
 
 function update() {
@@ -241,28 +241,34 @@ function collectStar(player, star) {
 
 function hitBomb(player, bomb) {
     bomb.disableBody(true, true);
-   this.physics.pause();
+    //this.physics.pause();
    life -= 1;
     lifeText.setText(showLife());
 
-    player.setTint(0xff0000);
-
+    //player.setTint(0xff0000);
+    console.log('boom')
     player.anims.play('turn');
 
-    gameOver = true;
-}
-    function hitvorog(player, vorog) {
-        vorog.disableBody(true, true);
-       this.physics.pause();
-       life -= 1;
-        lifeText.setText(showLife());
-    
+    if (life == 0){
         player.setTint(0xff0000);
-    
-        player.anims.play('turn');
-    
-        gameOver = true;
+        gameOver();
     }
+   
+
+   
+}
+    //function hitvorog(player, vorog) {
+       // vorog.disableBody(true, true);
+       //this.physics.pause();
+       //life -= 1;
+       // lifeText.setText(showLife());
+    
+       // player.setTint(0xff0000);
+    
+      //  player.anims.play('turn');
+    
+    //gameOver = true;
+   // }
 
 
 //Формування смуги життя
