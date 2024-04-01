@@ -23,6 +23,7 @@ var gameOver = false;
 var player;
 //var vorog;
 var stars;
+var heart;
 var bombs;
 var platforms;
 var cursors;
@@ -39,6 +40,7 @@ function preload() {
     this.load.image('bomb', 'assets/bomb.png');
     this.load.image('ground', 'assets/ground.png');
     this.load.image('star', 'assets/brown.png');
+    this.load.image('heart', 'assets/heart.png');
     this.load.image('kysh', 'assets/kysh.png');
     this.load.image('platformStart', 'assets/platformStart.png');
     this.load.image('platformOne', 'assets/platformOne.png');
@@ -80,20 +82,20 @@ function create() {
     player.setDepth(5);
 
     //Створення ворога
-   // vorog = this.physics.add.group();
+    // vorog = this.physics.add.group();
 
 
-   //vorog.create(50, 16, 'vorog')
-     //   .setBounce(18)
-      // .setCollideWorldBounds(true)
-      //  .setVelocity(Phaser.Math.Between(-200, 200), 100)
-       // .allowGravity = false;
+    //vorog.create(50, 16, 'vorog')
+    //   .setBounce(18)
+    // .setCollideWorldBounds(true)
+    //  .setVelocity(Phaser.Math.Between(-200, 200), 100)
+    // .allowGravity = false;
 
-      //  vorog = this.physics.add.group({
-         //   key: 'vorog',
-       //     repeat: 20    ,
-         //  setXY: { x: 12, y: 0, stepX: 50 }
-        //});
+    //  vorog = this.physics.add.group({
+    //   key: 'vorog',
+    //     repeat: 20    ,
+    //  setXY: { x: 12, y: 0, stepX: 50 }
+    //});
 
     this.cameras.main.setBounds(0, 0, worldWidth, 1080);
     this.physics.world.setBounds(0, 0, worldWidth, 1080);
@@ -138,10 +140,9 @@ function create() {
     //  Some stars to collect, 12 in total, evenly spaced 70 pixels apart along the x axis
     stars = this.physics.add.group({
         key: 'star',
-        repeat: 1000    ,
-        setXY: { x: 12, y: 0, stepX: 70 }
+        repeat: 1000,
+        setXY: { x: 12, y: 0, stepX: 100 }
     });
-
 
     stars.children.iterate(function (child) {
 
@@ -150,24 +151,51 @@ function create() {
 
     });
 
+    //  Some heart to collect, 12 in total, evenly spaced 500 pixels apart along the x axis
+    //heart = this.physics.add.group();
+
+    // heart.create(60, 16, 'heart')
+    //          //.setBounce(0.999)
+    //          .setCollideWorldBounds(true)
+    //          .setVelocity(Phaser.Math.Between(-200, 200), 100)
+    //          .allowGravity = false;
+
+    heart = this.physics.add.group({
+        key: 'heart',
+        repeat: 7,
+        setXY: { x: 50, y: 600, stepX: 2000 }
+    });
+
+
+
+
+
     //Додаємо бомби
-    bombs = this.physics.add.group();
+    //bombs = this.physics.add.group();
+    bombs = this.physics.add.group({
+        key: 'bomb',
+        repeat: 20,
+        setXY: { x: 250, y: 350, stepX: 200 }
+    });
+
+    bombs.children.iterate(function (child) {
+
+        //  Give each star a slightly different bounce
+        child
+            .setBounceY(Phaser.Math.FloatBetween(0.8, 0.9))
+            .setCollideWorldBounds(true)
+            .setVelocity(Phaser.Math.Between(-200, 200), 100)
+            
+
+    });
 
 
-    bombs.create(60, 16, 'bomb')
-        .setBounce(0.999)
-        .setCollideWorldBounds(true)
-        .setVelocity(Phaser.Math.Between(-200, 200), 100)
-        .allowGravity = false;
-
-        bombs = this.physics.add.group({
-            key: 'bomb',
-            repeat: 1000    ,
-            setXY: { x: 250, y: 350, stepX: 100 }
-        });
 
 
-    
+
+
+
+
     //  The score
 
     scoreText = this.add.text(16, 16, 'Очок: 0', { fontSize: '32px', fill: '#000' })
@@ -182,14 +210,16 @@ function create() {
 
     //  Collide the player and the stars with the platforms
     this.physics.add.collider(player, platforms);
-  //  this.physics.add.collider(vorog, platforms);
+    //  this.physics.add.collider(vorog, platforms);
     this.physics.add.collider(stars, platforms);
+    this.physics.add.collider(heart, platforms);
     this.physics.add.collider(bombs, platforms);
 
     //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
     this.physics.add.overlap(player, stars, collectStar, null, this);
+    this.physics.add.overlap(player, heart, collectheart, null, this);
     this.physics.add.collider(player, bombs, hitBomb, null, this);
-   // this.physics.add.collider(player, vorog, hitBomb, null, this);
+    // this.physics.add.collider(player, vorog, hitBomb, null, this);
 }
 
 function update() {
@@ -242,33 +272,45 @@ function collectStar(player, star) {
 function hitBomb(player, bomb) {
     bomb.disableBody(true, true);
     //this.physics.pause();
-   life -= 1;
+    life -= 1;
     lifeText.setText(showLife());
 
     //player.setTint(0xff0000);
     console.log('boom')
     player.anims.play('turn');
 
-    if (life == 0){
+    if (life == 0) {
         player.setTint(0xff0000);
         gameOver();
     }
-   
 
-   
+
+
 }
-    //function hitvorog(player, vorog) {
-       // vorog.disableBody(true, true);
-       //this.physics.pause();
-       //life -= 1;
-       // lifeText.setText(showLife());
-    
-       // player.setTint(0xff0000);
-    
-      //  player.anims.play('turn');
-    
-    //gameOver = true;
-   // }
+
+
+function collectheart(player, heart) {
+    heart.disableBody(true, true);
+    //this.physics.pause();
+    life += 1;
+    lifeText.setText(showLife());
+
+}
+
+
+
+//function hitvorog(player, vorog) {
+// vorog.disableBody(true, true);
+//this.physics.pause();
+//life -= 1;
+// lifeText.setText(showLife());
+
+// player.setTint(0xff0000);
+
+//  player.anims.play('turn');
+
+//gameOver = true;
+// }
 
 
 //Формування смуги життя
